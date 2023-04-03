@@ -19,6 +19,8 @@ const Main = () => {
   const [isMovable, setIsMovable] = useState(false);
   const [width, setWidth] = useState(112);
   const [height, setHeight] = useState(32);
+  const [saveSnack, setSaveSnack] = useState(false);
+  const [saveLock, setSaveLock] = useState(false);
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
@@ -68,15 +70,18 @@ const Main = () => {
 
   function handleSave() {
     localStorage.setItem("savedPositions", JSON.stringify(deltaPosition));
+    setSaveSnack(false);
     setOpen(true);
     setIsMovable(true);
     setTimeout(() => {
       setOpen(false);
       setValue("29 Nov 2022");
+      setSaveLock(true);
     }, 2000);
   }
 
   function handleLock() {
+    setSaveLock(false);
     setLocked(true);
   }
   function handleClear() {
@@ -84,12 +89,14 @@ const Main = () => {
     setIsMovable(false);
     setWidth(112);
     setHeight(32);
+    setSaveLock(false);
   }
 
   function handleUnLock() {
     setLocked(false);
     setValue(null);
     setIsMovable(false);
+    setSaveLock(false);
     setWidth(112);
     setHeight(32);
   }
@@ -104,6 +111,8 @@ const Main = () => {
 
     setWidth(70);
     setHeight(20);
+    setSaveSnack(true);
+
     // Starting point of the curve
     const startX = 50;
     const startY = 50;
@@ -157,7 +166,8 @@ const Main = () => {
         })}
       </div>
       <ul className="w-fit flex gap-2 flex-col">
-        <h3 className="font-semibold">Invoice Fields</h3>
+        <h1 className="font-semibold text-xl">Drag the Field Name in right side and drop in the left side</h1>
+        <h3 className="font-medium">Invoice Fields</h3>
         {column1.map((item, i) => (
           <div className="flex items-center gap-2">
             <li
@@ -195,13 +205,13 @@ const Main = () => {
               )}
               {/* } */}
             </li>
-            {!locked && <Edit fontSize="small" htmlColor="#232222" />}
+            {/* {!locked && <Edit fontSize="small" htmlColor="#232222" />} */}
             {deltaPosition !== null &&
               (value === null ? (
                 <>
-                  <LockOpen fontSize="small" htmlColor="#c3ad08" />
+                  {/* <LockOpen fontSize="small" htmlColor="#c3ad08" /> */}
                   <button onClick={handleSave} className="border pb-0.5 rounded-md text-white bg-green-600 px-3">
-                    save
+                    Save
                   </button>
                   <Snackbar open={open} autoHideDuration={2000} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
                     <Alert severity="info">Data fetching from backend !</Alert>
@@ -226,6 +236,15 @@ const Main = () => {
               ))}
           </div>
         ))}
+        <Snackbar open={saveSnack} autoHideDuration={2000} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+          <Alert severity="info">Click Save Button to lock Position</Alert>
+        </Snackbar>
+        <Snackbar open={saveLock} autoHideDuration={2000} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+          <Alert severity="error">Click ❌ to reposition </Alert>
+        </Snackbar>
+        <Snackbar open={saveLock} autoHideDuration={2000} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
+          <Alert severity="success">Click ✅ to lock position</Alert>
+        </Snackbar>
         {/* <hr /> */}
       </ul>
     </div>
