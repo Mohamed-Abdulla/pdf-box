@@ -1,9 +1,9 @@
 export const column1 = [
-  { label: "Invoice No", color: "#FFC107" },
+  // { label: "Invoice No", color: "#FFC107" },
   { label: "Invoice Date", color: "#3F51B5" },
-  { label: "Account Id", color: "#8BC34A" },
-  { label: "GST", color: "#FF5722" },
-  { label: "Total", color: "#607D8B" },
+  // { label: "Account Id", color: "#8BC34A" },
+  // { label: "GST", color: "#FF5722" },
+  // { label: "Total", color: "#607D8B" },
 ];
 
 export const column2 = [
