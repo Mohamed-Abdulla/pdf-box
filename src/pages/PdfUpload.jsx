@@ -31,9 +31,15 @@ const PdfUpload = () => {
       <form className="flex items-center justify-center mt-6 ">
         <label htmlFor="file-upload" className="flex flex-col items-center gap-2 cursor-pointer">
           <img src={upload} alt="pdf upload" className="max-h-16" />
-          Please Upload your Invoice
+          Click here to Upload your Invoice
         </label>
-        <input type="file" id="file-upload" className="hidden" onChange={(e) => setFiles(e.target.files[0])} />
+        <input
+          type="file"
+          id="file-upload"
+          accept="application/pdf"
+          className="hidden"
+          onChange={(e) => setFiles(e.target.files[0])}
+        />
       </form>
     </div>
   );

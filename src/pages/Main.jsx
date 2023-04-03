@@ -1,10 +1,10 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Draggable from "react-draggable";
 import { Document, Page, pdfjs } from "react-pdf/dist/esm/entry.webpack5";
 import { column1 } from "../constants";
 import { FileContext } from "../context/FileContext";
 import { Edit, LockOpen, Lock, Done, Clear, Delete } from "@mui/icons-material";
-import { Alert, Snackbar } from "@mui/material";
+import { Alert, Snackbar, Tooltip } from "@mui/material";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 const Main = () => {
   const [boxPosition, setBoxPosition] = useState({});
@@ -21,6 +21,16 @@ const Main = () => {
   const [height, setHeight] = useState(32);
   const [saveSnack, setSaveSnack] = useState(false);
   const [saveLock, setSaveLock] = useState(false);
+  const [drag, setDrag] = useState(false);
+  const [saveLocked, setSaveLocked] = useState(false);
+
+  useEffect(() => {
+    document.onmousemove = function (e) {
+      var x = e.pageX;
+      var y = e.pageY;
+      e.target.title = "X is " + x + " and Y is " + y;
+    };
+  }, []);
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
@@ -66,6 +76,7 @@ const Main = () => {
     }
 
     setDeltaPosition({ ...updatedDeltaPosition, ...updatedBoxPosition });
+    setDrag(false);
   };
 
   function handleSave() {
@@ -83,6 +94,10 @@ const Main = () => {
   function handleLock() {
     setSaveLock(false);
     setLocked(true);
+    setSaveLocked(true);
+    setTimeout(() => {
+      setSaveLocked(false);
+    }, 2000);
   }
   function handleClear() {
     setValue(null);
@@ -106,42 +121,44 @@ const Main = () => {
 
   function Drop(e, ui, item) {
     const canvas = document.querySelector(".canv");
-    const context = canvas.getContext("2d");
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     setWidth(70);
     setHeight(20);
     setSaveSnack(true);
 
     // Starting point of the curve
-    const startX = 50;
-    const startY = 50;
+    const startX = initialBoxPosition[item.label].x;
+    const startY = initialBoxPosition[item.label].y;
 
     // Ending point of the curve
-    const endY = 300;
-    const endX = 300;
+    const endY = deltaPosition[item.label].y + 56;
+    const endX = deltaPosition[item.label].x + 56;
 
     // Control point for the curve
-    const controlX = 25;
-    const controlY = 0;
-
-    context.beginPath();
-    context.moveTo(startX, startY);
-    context.quadraticCurveTo(controlX, controlY, endX, endY);
-    context.stroke();
+    const controlX = 400;
+    const controlY = 100;
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.quadraticCurveTo(controlX, controlY, endX, endY);
+    // ctx.lineTo(endX, endY); // Draw a line to (150, 100)
+    ctx.stroke();
+    setDrag(true);
   }
 
   return (
-    <div className="flex p-14 gap-14">
+    <div className="flex p-14 gap-14 relative">
       <canvas
         className="canv"
+        width={800}
+        height={1000}
         style={{
           position: "absolute",
           top: 0,
           left: 0,
           pointerEvents: "none",
-          zIndex: 99,
-          right: 0,
+          zIndex: drag ? 10 : 10,
         }}
       />
       <div className="dragger-area" role="presentation">
@@ -166,7 +183,7 @@ const Main = () => {
         })}
       </div>
       <ul className="w-fit flex gap-2 flex-col">
-        <h1 className="font-semibold text-xl">Drag the Field Name in right side and drop in the left side</h1>
+        <h1 className="font-semibold text-2xl">Drag the Field Name in right side and drop in the left side</h1>
         <h3 className="font-medium">Invoice Fields</h3>
         {column1.map((item, i) => (
           <div className="flex items-center gap-2">
@@ -220,8 +237,12 @@ const Main = () => {
               ) : locked ? (
                 <div className="flex items-center gap-1">
                   <p className="text-sm">{value}</p>
-                  <Lock fontSize="small" htmlColor="#c3ad08" />
-                  <Delete fontSize="small" htmlColor="#c3ad08" onClick={handleUnLock} sx={{ cursor: "pointer" }} />
+                  <Tooltip title="position locked">
+                    <Lock fontSize="small" htmlColor="#c3ad08" />
+                  </Tooltip>
+                  <Tooltip title="delete saved position">
+                    <Delete fontSize="small" htmlColor="#c3ad08" onClick={handleUnLock} sx={{ cursor: "pointer" }} />
+                  </Tooltip>
                 </div>
               ) : (
                 <div className="flex items-center gap-1">
@@ -236,17 +257,19 @@ const Main = () => {
               ))}
           </div>
         ))}
-        <Snackbar open={saveSnack} autoHideDuration={2000} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
-          <Alert severity="info">Click Save Button to lock Position</Alert>
-        </Snackbar>
-        <Snackbar open={saveLock} autoHideDuration={2000} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
-          <Alert severity="error">Click ❌ to reposition </Alert>
-        </Snackbar>
-        <Snackbar open={saveLock} autoHideDuration={2000} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
-          <Alert severity="success">Click ✅ to lock position</Alert>
-        </Snackbar>
-        {/* <hr /> */}
       </ul>
+      <Snackbar open={saveSnack} autoHideDuration={2000} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
+        <Alert severity="info">Click Save Button to get Field Value</Alert>
+      </Snackbar>
+      <Snackbar open={saveLock} autoHideDuration={2000} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
+        <Alert severity="info">
+          <p className="mb-1">Click ❌ to re-position label</p>
+          <p>Click ✅ to lock position</p>
+        </Alert>
+      </Snackbar>
+      <Snackbar open={saveLocked} autoHideDuration={2000} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
+        <Alert severity="success">Position is Locked</Alert>
+      </Snackbar>
     </div>
   );
 };
