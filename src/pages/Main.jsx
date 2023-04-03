@@ -17,6 +17,8 @@ const Main = () => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
   const [isMovable, setIsMovable] = useState(false);
+  const [width, setWidth] = useState(112);
+  const [height, setHeight] = useState(32);
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
@@ -80,19 +82,59 @@ const Main = () => {
   function handleClear() {
     setValue(null);
     setIsMovable(false);
+    setWidth(112);
+    setHeight(32);
   }
 
   function handleUnLock() {
     setLocked(false);
     setValue(null);
     setIsMovable(false);
+    setWidth(112);
+    setHeight(32);
   }
-
   function onCanvasCreated(canvas) {
     setCanvas(canvas);
   }
+
+  function Drop(e, ui, item) {
+    const canvas = document.querySelector(".canv");
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    setWidth(70);
+    setHeight(20);
+    // Starting point of the curve
+    const startX = 50;
+    const startY = 50;
+
+    // Ending point of the curve
+    const endY = 300;
+    const endX = 300;
+
+    // Control point for the curve
+    const controlX = 25;
+    const controlY = 0;
+
+    context.beginPath();
+    context.moveTo(startX, startY);
+    context.quadraticCurveTo(controlX, controlY, endX, endY);
+    context.stroke();
+  }
+
   return (
-    <div className="flex p-14 gap-14 ">
+    <div className="flex p-14 gap-14">
+      <canvas
+        className="canv"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          pointerEvents: "none",
+          zIndex: 99,
+          right: 0,
+        }}
+      />
       <div className="dragger-area" role="presentation">
         <Document file={pdf} onLoadSuccess={onDocumentLoadSuccess}>
           <Page pageNumber={1} onRenderSuccess={onCanvasCreated} width={595} />
@@ -107,7 +149,7 @@ const Main = () => {
               <li
                 key={i}
                 className={`cursor-grab rounded-md w-28 p-0.5 px-2  border absolute h-8  list-none `}
-                style={{ borderColor: item?.color, top: bp?.y, left: bp?.x }}
+                style={{ borderColor: item?.color, top: bp?.y, left: bp?.x, width: width, height: height }}
               ></li>
               // </Draggable>
             )
@@ -134,12 +176,12 @@ const Main = () => {
                     style={{ borderColor: item.color }}
                   />
                 ) : (
-                  <Draggable onDrag={(e, ui) => handleDrag(e, ui, item)}>
+                  <Draggable onDrag={(e, ui) => handleDrag(e, ui, item)} onStop={(e, ui) => Drop(e, ui, item)}>
                     <span
                       key={i}
                       className={`cursor-grab rounded-md w-28 p-0.5 px-2  border absolute h-8 inset-0 -top-[2px] -left-[2px]
                   `}
-                      style={{ borderColor: item.color }}
+                      style={{ borderColor: item.color, width: width, height: height }}
                     />
                   </Draggable>
                 )

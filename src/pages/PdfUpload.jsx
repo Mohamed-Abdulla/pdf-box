@@ -15,6 +15,11 @@ const PdfUpload = () => {
 
   const handleFormSubmit = () => {
     if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setFiles(reader.result);
+      };
+      reader.readAsDataURL(file);
       setPdf(file);
       navigate("/main");
     }
