@@ -1,11 +1,11 @@
 import React, { useState, useContext } from "react";
 import Draggable from "react-draggable";
-import { Document, Page } from "react-pdf/dist/esm/entry.webpack5";
+import { Document, Page, pdfjs } from "react-pdf/dist/esm/entry.webpack5";
 import { column1 } from "../constants";
 import { FileContext } from "../context/FileContext";
 import { Edit, LockOpen, Lock, Done, Clear, Delete } from "@mui/icons-material";
 import { Alert, Snackbar } from "@mui/material";
-
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 const Main = () => {
   const [boxPosition, setBoxPosition] = useState({});
   const [numPages, setNumPages] = useState(null);
