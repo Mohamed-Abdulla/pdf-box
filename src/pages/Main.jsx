@@ -24,13 +24,13 @@ const Main = () => {
   const [drag, setDrag] = useState(false);
   const [saveLocked, setSaveLocked] = useState(false);
 
-  useEffect(() => {
-    document.onmousemove = function (e) {
-      var x = e.pageX;
-      var y = e.pageY;
-      e.target.title = "X is " + x + " and Y is " + y;
-    };
-  }, []);
+  // useEffect(() => {
+  //   document.onmousemove = function (e) {
+  //     var x = e.pageX;
+  //     var y = e.pageY;
+  //     e.target.title = "X is " + x + " and Y is " + y;
+  //   };
+  // }, []);
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
